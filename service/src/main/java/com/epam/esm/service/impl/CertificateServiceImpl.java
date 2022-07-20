@@ -40,28 +40,26 @@ public class CertificateServiceImpl implements CertificateService {
         Certificate certificate = certificateDtoConverter.convertToEntity(certificateDto);
         Validator.validateCertificate(certificate);
         Set<Tag> tagNames = new HashSet<>();
-        if (!certificate.getTagNames().isEmpty()) {
-            for (Tag tag : certificate.getTagNames()) {
-                Validator.validateName(tag.getName());
-                Optional<Tag> tagControl = tagRepository.findTagByName(tag.getName());
-                if (tagControl.isPresent()) {
-                    tagNames.add(tagControl.get());
-                } else {
-                    tagNames.add(tagRepository.save(new Tag(tag.getName())));
-                }
+        for (Tag tag : certificate.getTagNames()) {
+            Validator.validateName(tag.getName());
+            Optional<Tag> tagControl = tagRepository.findTagByName(tag.getName());
+            if (tagControl.isPresent()) {
+                tagNames.add(tagControl.get());
+            } else {
+                tagNames.add(tagRepository.save(new Tag(tag.getName())));
             }
-            certificate.setTagNames(tagNames);
-            return certificateDtoConverter.convertToDto(certificateRepository.save(certificate));
         }
-        throw new ServiceException(TAG_EMPTY);
+        certificate.setTagNames(tagNames);
+        return certificateDtoConverter.convertToDto(certificateRepository.save(certificate));
     }
 
     public void delete(Integer id) throws ServiceException {
         Validator.isGreaterZero(id);
         if (certificateRepository.existsById(id)) {
             certificateRepository.deleteById(id);
-        }else {
-        throw new ServiceException(ERR_NO_SUCH_CERTIFICATES);}
+        } else {
+            throw new ServiceException(ERR_NO_SUCH_CERTIFICATES);
+        }
     }
 
     public CertificateDto update(Integer id, Map<String, Object> updates) throws ServiceException {
@@ -75,11 +73,14 @@ public class CertificateServiceImpl implements CertificateService {
         Validator.isUpdatesValid(updates);
         if (updates.containsKey(NAME)) {
             certificateRepository.updateName(id, updates.get(NAME).toString());
-        } else if (updates.containsKey(DESCRIPTION)) {
+        }
+        if (updates.containsKey(DESCRIPTION)) {
             certificateRepository.updateDescription(id, updates.get(DESCRIPTION).toString());
-        } else if (updates.containsKey(PRICE)) {
+        }
+        if (updates.containsKey(PRICE)) {
             certificateRepository.updatePrice(id, (Double) updates.get(PRICE));
-        } else if (updates.containsKey(DURATION)) {
+        }
+        if (updates.containsKey(DURATION)) {
             certificateRepository.updateDuration(id, (Integer) updates.get(DURATION));
         }
         return certificateDtoConverter.convertToDto(certificateRepository.findById(id).orElseThrow(() ->
@@ -121,12 +122,8 @@ public class CertificateServiceImpl implements CertificateService {
         Certificate certificate = certificateDtoConverter.convertToEntity(certificateDto);
         Validator.validateCertificate(certificate);
         Optional<Certificate> result = certificateRepository.findById(id);
-        if (result.isPresent()) {
-            certificate.setId(id);
-            certificate.setCreateDate(result.get().getCreateDate());
-        } else {
-            throw new ServiceException(ERR_NO_SUCH_CERTIFICATES);
-        }
+        certificate.setId(id);
+        certificate.setCreateDate(result.orElseThrow(() -> new ServiceException(ERR_NO_SUCH_CERTIFICATES)).getCreateDate());
         Set<Tag> tagNames = new HashSet<>();
         if (!certificate.getTagNames().isEmpty()) {
             for (Tag tag : certificate.getTagNames()) {

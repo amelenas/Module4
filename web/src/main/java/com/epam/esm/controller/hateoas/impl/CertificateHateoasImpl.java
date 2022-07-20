@@ -4,6 +4,7 @@ import com.epam.esm.controller.CertificateController;
 import com.epam.esm.controller.TagController;
 import com.epam.esm.controller.hateoas.HateoasAdder;
 import com.epam.esm.service.dto.entity.CertificateDto;
+import com.epam.esm.service.exception.ServiceException;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
@@ -35,7 +36,9 @@ public class CertificateHateoasImpl implements HateoasAdder<CertificateDto> {
 
     public static ResponseEntity<CollectionModel<CertificateDto>> getCollectionModelWithPagination(String[] tagNames, String partName,
                                                                              String[] sort, String sortDirection, int page, int limit, List<CertificateDto> list) {
-        int firstPage = 1;
+
+        int firstPage = 0;
+        if (page < firstPage) throw new ServiceException("invalid.page");
         int nextPage = list.size() < limit ? page : page + 1;
         int prevPage = page == firstPage ? firstPage : page - 1;
         if (tagNames == null || tagNames.length < 1) {
