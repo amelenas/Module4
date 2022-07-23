@@ -36,10 +36,6 @@ class OrderServiceImplTest {
     private OrderServiceImpl orderService;
     @InjectMocks
     private DtoConverter<Order, OrderDto> dtoConverter = Mockito.mock(OrderConverterImpl.class);
-    @Test
-    void delete_InvalidId_Test() {
-        assertThrows(ServiceException.class, () -> orderService.delete(-1));
-    }
 
     @Test
     void delete_Positive_Test() {
