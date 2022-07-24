@@ -4,7 +4,10 @@ plugins {
     id 'java-library'
     id 'jacoco'
 }
-
+jacoco {
+    toolVersion = "0.8.8"
+    reportsDirectory = layout.buildDirectory.dir('customJacocoReportDir')
+}
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
 }
